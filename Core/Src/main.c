@@ -20,6 +20,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
+#include "RCFilter.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -44,6 +45,7 @@
 I2C_HandleTypeDef hi2c1;
 
 UART_HandleTypeDef huart2;
+RCFilter lpFilter;
 
 /* USER CODE BEGIN PV */
 
@@ -62,6 +64,13 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN 0 */
 static const uint8_t MPU6050_ADDR = 0x68<<1;
 static const uint8_t WHO_AM_I = 0x75;
+static const uint8_t ACCEL_ZOUT_L = 0x40;
+static const uint8_t ACCEL_ZOUT_H = 0x3F;
+
+
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -80,6 +89,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  RCFilter_Init(&lpFilter, 100, 0.05);
 
   /* USER CODE END Init */
 
@@ -96,8 +106,9 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   uint8_t buff[12];
+  char accel_buff[12];
   HAL_StatusTypeDef ret;
-
+  int16_t accel_val;
 
   /* USER CODE END 2 */
 
@@ -106,28 +117,59 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  buff[0] = WHO_AM_I;
-	  	ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+
+	  //read byte 1 of accelerometer accel_low register
+	  buff[0] = ACCEL_ZOUT_L;
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
 	  	if ( ret != HAL_OK ) {
-	  	  strcpy((char*)buff, "Error Tx\r\n");
+	  	  strcpy((char*)buff, "Error Tx1\r\n");
 	  	} else {
 
 
 	  	  ret = HAL_I2C_Master_Receive(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
 	  	  if ( ret != HAL_OK ) {
-	  		strcpy((char*)buff, "Error Rx\r\n");
+	  		strcpy((char*)buff, "Error Rx1\r\n");
 	  	  } else {
+	  		  ;
 
-	  	  sprintf((char*)buff,
-	  			  "%u \r\n",buff[0]);
+
 	  	  }
 	  	}
 
-	  	// Send out buffer (temperature or error message)
-	  	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
+      //read byte 2 of accelerometer accel_high register
+	  buff[1] = ACCEL_ZOUT_H;
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+		if ( ret != HAL_OK ) {
+		  strcpy((char*)buff, "Error Tx2\r\n");
+		} else {
 
-	  	// Wait
-	  	HAL_Delay(500);
+
+		  ret = HAL_I2C_Master_Receive(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+		  if ( ret != HAL_OK ) {
+			strcpy((char*)buff, "Error Rx2\r\n");
+		  } else {
+			  ;
+
+
+		  }
+		}
+
+
+	//combine the two bytes
+	accel_val = (buff[1] << 8) | buff[0];
+
+
+
+	sprintf(accel_buff, "%d \r\n", accel_val);
+
+
+
+
+	// Send out buffer (temperature or error message)
+	HAL_UART_Transmit(&huart2, accel_buff, strlen((accel_buff)), HAL_MAX_DELAY);
+
+	// Wait
+	HAL_Delay(500);
 
     /* USER CODE BEGIN 3 */
   }
