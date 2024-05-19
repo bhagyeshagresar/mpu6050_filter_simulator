@@ -18,7 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <stdio.h>
+#include <string.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -59,7 +60,8 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static const uint8_t MPU6050_ADDR = 0x68<<1;
+static const uint8_t WHO_AM_I = 0x75;
 /* USER CODE END 0 */
 
 /**
@@ -93,6 +95,9 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  uint8_t buff[12];
+  HAL_StatusTypeDef ret;
+
 
   /* USER CODE END 2 */
 
@@ -101,6 +106,28 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  buff[0] = WHO_AM_I;
+	  	ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+	  	if ( ret != HAL_OK ) {
+	  	  strcpy((char*)buff, "Error Tx\r\n");
+	  	} else {
+
+
+	  	  ret = HAL_I2C_Master_Receive(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+	  	  if ( ret != HAL_OK ) {
+	  		strcpy((char*)buff, "Error Rx\r\n");
+	  	  } else {
+
+	  	  sprintf((char*)buff,
+	  			  "%u \r\n",buff[0]);
+	  	  }
+	  	}
+
+	  	// Send out buffer (temperature or error message)
+	  	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
+
+	  	// Wait
+	  	HAL_Delay(500);
 
     /* USER CODE BEGIN 3 */
   }
