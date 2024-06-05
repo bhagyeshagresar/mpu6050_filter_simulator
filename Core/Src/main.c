@@ -66,7 +66,8 @@ static const uint8_t MPU6050_ADDR = 0x68<<1;
 static const uint8_t WHO_AM_I = 0x75;
 static const uint8_t ACCEL_ZOUT_L = 0x40;
 static const uint8_t ACCEL_ZOUT_H = 0x3F;
-
+static const uint8_t ACCEL_XOUT_L = 0x3C;
+static const uint8_t ACCEL_XOUT_H = 0x3B;
 
 
 
@@ -106,9 +107,34 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   uint8_t buff[12];
-  char accel_buff[12];
+  uint8_t accel_buff[12];
+
   HAL_StatusTypeDef ret;
   int16_t accel_val;
+
+
+
+ /* ret = HAL_I2C_IsDeviceReady(&hi2c1, MPU6050_ADDR, 1, 100);
+
+  if(ret == HAL_OK){
+
+	  strcpy((char*)buff, "Device is available\r\n");
+  }
+  else{
+	  strcpy((char*)buff, "Device is unavailable\r\n");
+  }*/
+
+  uint8_t pwr_data = 0x00;
+
+  ret = HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, 0x6B, 1, &pwr_data, 1, 100);
+
+  if(ret == HAL_OK){
+
+  	  strcpy((char*)buff, "Device is awake\r\n");
+    }
+    else{
+  	  strcpy((char*)buff, "Problem setting the sleep bit\r\n");
+    }
 
   /* USER CODE END 2 */
 
@@ -118,9 +144,11 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+	  //buff[0] = WHO_AM_I;
+
 	  //read byte 1 of accelerometer accel_low register
-	  buff[0] = ACCEL_ZOUT_L;
-	  ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
+	  //buff[0] = ACCEL_ZOUT_L;
+	 /* ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
 	  	if ( ret != HAL_OK ) {
 	  	  strcpy((char*)buff, "Error Tx1\r\n");
 	  	} else {
@@ -130,14 +158,16 @@ int main(void)
 	  	  if ( ret != HAL_OK ) {
 	  		strcpy((char*)buff, "Error Rx1\r\n");
 	  	  } else {
-	  		  ;
+
+	  		sprintf(accel_buff, "%d \r\n", buff[0]);
+
 
 
 	  	  }
-	  	}
+	  	}*/
 
       //read byte 2 of accelerometer accel_high register
-	  buff[1] = ACCEL_ZOUT_H;
+	 /* buff[1] = ACCEL_ZOUT_H;
 	  ret = HAL_I2C_Master_Transmit(&hi2c1, MPU6050_ADDR, buff, 1, HAL_MAX_DELAY);
 		if ( ret != HAL_OK ) {
 		  strcpy((char*)buff, "Error Tx2\r\n");
@@ -152,12 +182,34 @@ int main(void)
 
 
 		  }
-		}
+		}*/
+
+	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_L, I2C_MEMADD_SIZE_8BIT , buff, 1, 10000);
+
+	if(ret != HAL_OK){
+		strcpy((char*)buff, "Error Rx2\r\n");
+
+	}
+	else{
+
+		;
+	}
+
+	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_H, I2C_MEMADD_SIZE_8BIT , buff, 1, 10000);
+
+	if(ret != HAL_OK){
+		strcpy((char*)buff, "Error Rx2\r\n");
+
+	}
+	else{
+
+		;
+	}
 
 
 	//combine the two bytes
-	accel_val = (buff[1] << 8) | buff[0];
-
+	accel_val = ((buff[1] << 8) | buff[0])/16384.0;
+	//accel_val = buff[0];
 
 
 	sprintf(accel_buff, "%d \r\n", accel_val);
@@ -165,7 +217,9 @@ int main(void)
 
 
 
+
 	// Send out buffer (temperature or error message)
+	//HAL_UART_Transmit(&huart2, buff, strlen((buff)), HAL_MAX_DELAY);
 	HAL_UART_Transmit(&huart2, accel_buff, strlen((accel_buff)), HAL_MAX_DELAY);
 
 	// Wait
