@@ -161,7 +161,7 @@ int main(void)
   {
 
 	// I do not understnad if HAL_I2C_Mem_Read can read two consecutive bytes or does it only read into one data buffer.
-	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_L, I2C_MEMADD_SIZE_8BIT , buff1, 1, 10000);
+	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_H, I2C_MEMADD_SIZE_8BIT , buff1, 2, 10000);
 
 	if(ret != HAL_OK){
 		strcpy((char*)buff, "Error Receiving 1st byte\r\n");
@@ -174,7 +174,7 @@ int main(void)
 
 
 
-	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_H, I2C_MEMADD_SIZE_8BIT , buff2, 1, 10000);
+	/*ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_H, I2C_MEMADD_SIZE_8BIT , buff2, 1, 10000);
 
 	if(ret != HAL_OK){
 		strcpy((char*)buff, "Error Receiving 2nd byte\r\n");
@@ -183,15 +183,15 @@ int main(void)
 	else{
 		;
 	}
-
+*/
 
 
 	//combine the two bytes
-	accel_val = ((buff2[0] << 8) | buff1[0]);
+	accel_val = ((buff1[0] << 8) | buff1[1]);
 
-	float accel_val_flt = accel_val*0.000061; //why 0.000061 ?
+	float accel_val_flt = accel_val/16384.0; //why 0.000061 ?
 
-	sprintf(accel_buff, "%f\r\n", accel_val_flt);
+	sprintf(accel_buff, "%.2f\r\n", accel_val_flt);
 
 
 	HAL_UART_Transmit(&huart2, accel_buff, strlen((accel_buff)), HAL_MAX_DELAY);
