@@ -90,7 +90,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  RCFilter_Init(&lpFilter, 100, 0.05);
+  RCFilter_Init(&lpFilter, 2.0f, 0.01f);
 
   /* USER CODE END Init */
 
@@ -109,7 +109,8 @@ int main(void)
   uint8_t buff[50];
   uint8_t buff1[12];
   uint8_t buff2[12];
-  uint8_t accel_buff[12];
+  uint8_t accel_buff1[12];
+  uint8_t accel_buff2[12];
   HAL_StatusTypeDef ret;
   int16_t accel_val;
 
@@ -148,7 +149,7 @@ int main(void)
 
   HAL_UART_Transmit(&huart2, buff, strlen((buff)), HAL_MAX_DELAY);
 
-  HAL_Delay(500);
+  //HAL_Delay(500);
 
 
 
@@ -189,13 +190,28 @@ int main(void)
 	//combine the two bytes
 	accel_val = ((buff1[0] << 8) | buff1[1]);
 
+	//
 	float accel_val_flt = accel_val/16384.0; //why 0.000061 ?
+	sprintf(accel_buff1, "%.2f\r\n", accel_val_flt);
 
-	sprintf(accel_buff, "%.2f\r\n", accel_val_flt);
+	//HAL_UART_Transmit(&huart2, accel_buff1, strlen((accel_buff1)), HAL_MAX_DELAY);
+	//HAL_Delay(500);
+
+	float filtered_val = RCFilter_Update(&lpFilter, accel_val_flt);
+	sprintf(accel_buff2, "%.2f\r\n", filtered_val);
 
 
-	HAL_UART_Transmit(&huart2, accel_buff, strlen((accel_buff)), HAL_MAX_DELAY);
+	//HAL_UART_Transmit(&huart2, accel_buff2, strlen((accel_buff2)), HAL_MAX_DELAY);
+	//HAL_Delay(500);
+
+
+	char logBuf[128];
+
+	sprintf(logBuf, "%.2f, %.2f\r\n", accel_val_flt, filtered_val);
+
+	HAL_UART_Transmit(&huart2, logBuf, strlen((logBuf)), HAL_MAX_DELAY);
 	HAL_Delay(500);
+
 
     /* USER CODE BEGIN 3 */
   }
