@@ -1,5 +1,5 @@
 
-mpu6050_filter_simulation.elf:     file format elf32-littlearm
+mpu6050_rc_filter.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn

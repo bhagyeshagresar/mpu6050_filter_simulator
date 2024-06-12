@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>mpu6050_filter_simulation</name>
+	<name>mpu6050_rc_filter</name>
 	<comment></comment>
 	<projects>
 	</projects>
