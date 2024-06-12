@@ -23,6 +23,8 @@ void RCFilter_Init(RCFilter *filt, float cutoffFreqHz, float sampleTimeS){
 }
 
 
+
+//RC filter update function
 float RCFilter_Update(RCFilter *filt, float inp){
 
 	filt->out[1] = filt->out[0];

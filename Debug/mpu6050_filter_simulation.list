@@ -1333,6 +1333,8 @@ void RCFilter_Init(RCFilter *filt, float cutoffFreqHz, float sampleTimeS){
 08000ffc <RCFilter_Update>:
 
 
+
+//RC filter update function
 float RCFilter_Update(RCFilter *filt, float inp){
  8000ffc:	b480      	push	{r7}
  8000ffe:	b083      	sub	sp, #12
