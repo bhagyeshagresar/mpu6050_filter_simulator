@@ -161,7 +161,7 @@ int main(void)
   while (1)
   {
 
-	// I do not understnad if HAL_I2C_Mem_Read can read two consecutive bytes or does it only read into one data buffer.
+	// Reads data sequentially from MPU6050 depending on how many bytes you specify
 	ret = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR, ACCEL_ZOUT_H, I2C_MEMADD_SIZE_8BIT , buff1, 2, 10000);
 
 	if(ret != HAL_OK){
